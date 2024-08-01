@@ -1,0 +1,38 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "GameFramework/Character.h"
+#include "SHPlayer.generated.h"
+
+UCLASS()
+class PROJECTSHOOT_API ASHPlayer : public ACharacter
+{
+	GENERATED_BODY()
+
+public:
+	// Sets default values for this character's properties
+	ASHPlayer();
+
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+
+public:	
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+private:
+	void MoveFront(float val);
+	void MoveRight(float val);
+
+public:
+	UPROPERTY(BluePrintReadWrite)
+	bool isRunning;
+	UFUNCTION(BluePrintImplementableEvent)
+	void StartStopRun();
+};
