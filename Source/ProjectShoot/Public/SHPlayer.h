@@ -29,10 +29,14 @@ public:
 private:
 	void MoveFront(float val);
 	void MoveRight(float val);
+	void StartStopRun();
+	void LookRight(float val);
+	bool isRunning;
+	bool isRotate;
 
 public:
-	UPROPERTY(BluePrintReadWrite)
-	bool isRunning;
-	UFUNCTION(BluePrintImplementableEvent)
-	void StartStopRun();
+	UFUNCTION(BlueprintCallable)
+	bool GetIsRunning();
+	UFUNCTION(BlueprintCallable)
+	bool GetIsRotate();
 };

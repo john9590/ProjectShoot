@@ -10,6 +10,7 @@ ASHPlayer::ASHPlayer()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	isRunning = false;
+	isRotate = false;
 }
 
 // Called when the game starts or when spawned
@@ -23,7 +24,9 @@ void ASHPlayer::BeginPlay()
 void ASHPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	if (!isRunning && GetCharacterMovement()->GetMaxSpeed() > 600.f) {
+		GetCharacterMovement()->MaxWalkSpeed = fmaxf(GetCharacterMovement()->MaxWalkSpeed - 2048.f * DeltaTime, 600.f);
+	}
 }
 
 // Called to bind functionality to input
@@ -33,8 +36,8 @@ void ASHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAxis("MoveFront", this, &ASHPlayer::MoveFront);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASHPlayer::MoveRight);
-	PlayerInputComponent->BindAxis("LookUp", this, &ASHPlayer::AddControllerPitchInput);
-	PlayerInputComponent->BindAxis("LookRight", this, &ASHPlayer::AddControllerYawInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("LookRight", this, &ASHPlayer::LookRight);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASHPlayer::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ASHPlayer::StopJumping);
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &ASHPlayer::StartStopRun);
@@ -45,18 +48,36 @@ void ASHPlayer::MoveFront(float val)
 	if (val != 0.0f && Controller) {
 		AddMovementInput(GetActorForwardVector(), val);
 	}
+	else if (isRunning) StartStopRun();
 }
 
 void ASHPlayer::MoveRight(float val)
 {
 	if (val != 0.0f && Controller) {
+		if (isRunning) StartStopRun();
 		AddMovementInput(GetActorRightVector(), val);
 	}
 }
 
-//void ASHPlayer::StartStopRun()
-//{
-//	isRunning = !isRunning;
-//	if (isRunning) GetCharacterMovement()->MaxWalkSpeed = 1200.f;
-//	else GetCharacterMovement()->MaxWalkSpeed = 600.f;
-//}
+void ASHPlayer::LookRight(float val)
+{
+	AddControllerYawInput(val);
+	if (val == 0.f) isRotate = false;
+	else isRotate = true;
+}
+
+bool ASHPlayer::GetIsRunning()
+{
+	return isRunning;
+}
+
+bool ASHPlayer::GetIsRotate()
+{
+	return isRotate;
+}
+
+void ASHPlayer::StartStopRun()
+{
+	isRunning = !isRunning;
+	if (isRunning) GetCharacterMovement()->MaxWalkSpeed = 1200.f;
+}
