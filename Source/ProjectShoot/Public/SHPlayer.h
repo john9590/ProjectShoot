@@ -35,8 +35,6 @@ private:
 	void LookUp(float val);
 	bool isRunning;
 	bool isRotate;
-	float rightValue;
-	float upValue;
 	ASHWeapon* weapon;
 
 public:
@@ -44,10 +42,6 @@ public:
 	bool GetIsRunning();
 	UFUNCTION(BlueprintCallable)
 	bool GetIsRotate();
-	UFUNCTION(BlueprintCallable)
-	float GetRightValue();
-	UFUNCTION(BlueprintCallable)
-	float GetUpValue();
 	UFUNCTION(BlueprintCallable)
 	FRotator GetAim();
 };

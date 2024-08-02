@@ -10,6 +10,9 @@ ASHWeapon::ASHWeapon()
 	PrimaryActorTick.bCanEverTick = true;
 	weapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WEAPON"));
 	weapon->SetupAttachment(RootComponent);
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponAsset(TEXT("Rifle '/Game/Weapons/Rifle'"));
+	if (WeaponAsset.Succeeded()) weapon->SkeletalMesh = WeaponAsset.Object;
+	//weapon->SkeletalMesh = 
 }
 
 // Called when the game starts or when spawned

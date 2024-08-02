@@ -11,8 +11,6 @@ ASHPlayer::ASHPlayer()
 	PrimaryActorTick.bCanEverTick = true;
 	isRunning = false;
 	isRotate = false;
-	rightValue = 0.f;
-	upValue = 0.f;
 }
 
 // Called when the game starts or when spawned
@@ -20,7 +18,8 @@ void ASHPlayer::BeginPlay()
 {
 	Super::BeginPlay();
 	FName Socket(TEXT("b_RightHand"));
-	weapon = GetWorld()->SpawnActor<ASHWeapon>(FVector::ZeroVector,FRotator(-40.,90.,60.));
+	//FActorSpawnParameters SpawnP;
+	weapon = GetWorld()->SpawnActor<ASHWeapon>(FVector::ZeroVector,FRotator(90.,60.,-40.));
 	if (weapon) {
 		weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Socket);
 	}
@@ -69,7 +68,6 @@ void ASHPlayer::LookRight(float val)
 {
 	if (val != 0.f && Controller) {
 		AddControllerYawInput(val);
-		rightValue += val;
 	}
 	if (val == 0.f) isRotate = false;
 	else isRotate = true;
@@ -79,7 +77,6 @@ void ASHPlayer::LookUp(float val)
 {
 	if (val != 0.f && Controller) {
 		AddControllerPitchInput(val);
-		upValue += val;
 	}
 }
 
@@ -91,16 +88,6 @@ bool ASHPlayer::GetIsRunning()
 bool ASHPlayer::GetIsRotate()
 {
 	return isRotate;
-}
-
-float ASHPlayer::GetRightValue()
-{
-	return rightValue;
-}
-
-float ASHPlayer::GetUpValue()
-{
-	return upValue;
 }
 
 FRotator ASHPlayer::GetAim()
