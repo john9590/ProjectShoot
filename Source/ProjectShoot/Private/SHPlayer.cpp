@@ -11,6 +11,8 @@ ASHPlayer::ASHPlayer()
 	PrimaryActorTick.bCanEverTick = true;
 	isRunning = false;
 	isRotate = false;
+	rightValue = 0.f;
+	upValue = 0.f;
 }
 
 // Called when the game starts or when spawned
@@ -40,7 +42,7 @@ void ASHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAxis("MoveFront", this, &ASHPlayer::MoveFront);
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASHPlayer::MoveRight);
-	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
+	PlayerInputComponent->BindAxis("LookUp", this, &ASHPlayer::LookUp);
 	PlayerInputComponent->BindAxis("LookRight", this, &ASHPlayer::LookRight);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASHPlayer::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ASHPlayer::StopJumping);
@@ -49,7 +51,7 @@ void ASHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void ASHPlayer::MoveFront(float val)
 {
-	if (val != 0.0f && Controller) {
+	if (val != 0.f && Controller) {
 		AddMovementInput(GetActorForwardVector(), val);
 	}
 	else if (isRunning) StartStopRun();
@@ -57,7 +59,7 @@ void ASHPlayer::MoveFront(float val)
 
 void ASHPlayer::MoveRight(float val)
 {
-	if (val != 0.0f && Controller) {
+	if (val != 0.f && Controller) {
 		if (isRunning) StartStopRun();
 		AddMovementInput(GetActorRightVector(), val);
 	}
@@ -65,9 +67,20 @@ void ASHPlayer::MoveRight(float val)
 
 void ASHPlayer::LookRight(float val)
 {
-	AddControllerYawInput(val);
+	if (val != 0.f && Controller) {
+		AddControllerYawInput(val);
+		rightValue += val;
+	}
 	if (val == 0.f) isRotate = false;
 	else isRotate = true;
+}
+
+void ASHPlayer::LookUp(float val)
+{
+	if (val != 0.f && Controller) {
+		AddControllerPitchInput(val);
+		upValue += val;
+	}
 }
 
 bool ASHPlayer::GetIsRunning()
@@ -78,6 +91,21 @@ bool ASHPlayer::GetIsRunning()
 bool ASHPlayer::GetIsRotate()
 {
 	return isRotate;
+}
+
+float ASHPlayer::GetRightValue()
+{
+	return rightValue;
+}
+
+float ASHPlayer::GetUpValue()
+{
+	return upValue;
+}
+
+FRotator ASHPlayer::GetAim()
+{
+	return ActorToWorld().InverseTransformVector(GetBaseAimRotation().Vector()).Rotation();
 }
 
 void ASHPlayer::StartStopRun()
