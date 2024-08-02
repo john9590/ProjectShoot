@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "SHWeapon.h"
 #include "SHPlayer.generated.h"
 
 UCLASS()
@@ -33,6 +34,7 @@ private:
 	void LookRight(float val);
 	bool isRunning;
 	bool isRotate;
+	ASHWeapon* weapon;
 
 public:
 	UFUNCTION(BlueprintCallable)

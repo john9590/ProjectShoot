@@ -17,7 +17,11 @@ ASHPlayer::ASHPlayer()
 void ASHPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	FName Socket(TEXT("b_RightHand"));
+	weapon = GetWorld()->SpawnActor<ASHWeapon>(FVector::ZeroVector,FRotator(-40.,90.,60.));
+	if (weapon) {
+		weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Socket);
+	}
 }
 
 // Called every frame
