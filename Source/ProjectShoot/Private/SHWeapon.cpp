@@ -2,6 +2,7 @@
 
 
 #include "SHWeapon.h"
+#include "SHBullets.h"
 
 // Sets default values
 ASHWeapon::ASHWeapon()
@@ -12,7 +13,7 @@ ASHWeapon::ASHWeapon()
 	weapon->SetupAttachment(RootComponent);
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponAsset(TEXT("Rifle '/Game/Weapons/Rifle'"));
 	if (WeaponAsset.Succeeded()) weapon->SkeletalMesh = WeaponAsset.Object;
-	//weapon->SkeletalMesh = 
+	BulletBP = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), NULL, TEXT("Bullets '/Game/Blueprints/Weapons/Bullets.Bullets_C'")));
 }
 
 // Called when the game starts or when spawned
@@ -27,5 +28,14 @@ void ASHWeapon::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ASHWeapon::Fire()
+{
+	FActorSpawnParameters param;
+	ASHBullets* bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, param);
+	if (bullet) {
+		bullet->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
+	}
 }
 

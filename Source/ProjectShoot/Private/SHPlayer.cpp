@@ -46,6 +46,7 @@ void ASHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASHPlayer::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ASHPlayer::StopJumping);
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &ASHPlayer::StartStopRun);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASHPlayer::Fire);
 }
 
 void ASHPlayer::MoveFront(float val)
@@ -78,6 +79,11 @@ void ASHPlayer::LookUp(float val)
 	if (val != 0.f && Controller) {
 		AddControllerPitchInput(val);
 	}
+}
+
+void ASHPlayer::Fire()
+{
+	weapon->Fire();
 }
 
 bool ASHPlayer::GetIsRunning()

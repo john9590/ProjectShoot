@@ -33,6 +33,7 @@ private:
 	void StartStopRun();
 	void LookRight(float val);
 	void LookUp(float val);
+	void Fire();
 	bool isRunning;
 	bool isRotate;
 	ASHWeapon* weapon;

@@ -4,16 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "SHWeapon.generated.h"
+#include "Components/SphereComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
+#include "SHBullets.generated.h"
 
 UCLASS()
-class ASHWeapon : public AActor
+class ASHBullets : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ASHWeapon();
+	ASHBullets();
 
 protected:
 	// Called when the game starts or when spawned
@@ -22,10 +24,9 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	void Fire();
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	USkeletalMeshComponent* weapon;
+	USphereComponent* collision;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	UProjectileMovementComponent* MovementComp;
 
-private:
-	UClass* BulletBP;
 };
