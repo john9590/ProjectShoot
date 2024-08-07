@@ -83,7 +83,7 @@ void ASHPlayer::LookUp(float val)
 
 void ASHPlayer::Fire()
 {
-	weapon->Fire();
+	weapon->Fire(GetActorLocation() + GetActorRightVector() * 75. + GetActorUpVector() * 100., GetBaseAimRotation());
 }
 
 bool ASHPlayer::GetIsRunning()

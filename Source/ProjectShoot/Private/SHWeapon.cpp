@@ -30,12 +30,12 @@ void ASHWeapon::Tick(float DeltaTime)
 
 }
 
-void ASHWeapon::Fire()
+void ASHWeapon::Fire(FVector pos, FRotator rot)
 {
 	FActorSpawnParameters param;
-	ASHBullets* bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, param);
-	if (bullet) {
-		bullet->AttachToActor(this, FAttachmentTransformRules::KeepRelativeTransform);
-	}
+	ASHBullets* bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, pos, rot, param);
+	//if (bullet) {
+		//bullet->AttachToActor(this, FA);
+	//}
 }
 

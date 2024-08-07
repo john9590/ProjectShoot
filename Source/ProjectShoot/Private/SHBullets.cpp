@@ -12,6 +12,8 @@ ASHBullets::ASHBullets()
 	collision = CreateDefaultSubobject<USphereComponent>(TEXT("SPHERE"));
 	collision->SetupAttachment(RootComponent);
 	MovementComp = CreateDefaultSubobject<UProjectileMovementComponent>(TEXT("COMPONENT"));
+	collision->OnComponentBeginOverlap.AddDynamic(this, &ASHBullets::BeginOverlap);
+	collision->OnComponentHit.AddDynamic(this, &ASHBullets::OnHit);
 }
 
 // Called when the game starts or when spawned
@@ -26,5 +28,16 @@ void ASHBullets::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+}
+
+void ASHBullets::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	Other->GetActorLocation();
+	while(!Destroy());
+}
+
+void ASHBullets::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	
 }
 

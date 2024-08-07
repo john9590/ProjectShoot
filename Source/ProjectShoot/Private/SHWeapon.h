@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "GameFramework/Actor.h" 
 #include "SHWeapon.generated.h"
 
 UCLASS()
@@ -22,7 +22,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	void Fire();
+	void Fire(FVector pos, FRotator rot);
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	USkeletalMeshComponent* weapon;
 
