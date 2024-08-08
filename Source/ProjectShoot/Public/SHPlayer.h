@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "SHWeapon.h"
 #include "SHPlayer.generated.h"
 
@@ -34,9 +35,14 @@ private:
 	void LookRight(float val);
 	void LookUp(float val);
 	void Fire();
+	void FireStart();
+	void FireEnd();
 	bool isRunning;
 	bool isRotate;
 	ASHWeapon* weapon;
+	FTimerHandle FireTimer;
+	UClass* BulletBP;
+	UParticleSystemComponent* emitter;
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -45,4 +51,6 @@ public:
 	bool GetIsRotate();
 	UFUNCTION(BlueprintCallable)
 	FRotator GetAim();
+	UPROPERTY(EditAnyWhere)
+	UParticleSystem* MFAsset;
 };

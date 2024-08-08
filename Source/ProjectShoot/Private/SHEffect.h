@@ -3,17 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h" 
-#include "SHWeapon.generated.h"
+#include "GameFramework/Actor.h"
+#include "Particles/ParticleSystemComponent.h"
+#include "SHEffect.generated.h"
 
 UCLASS()
-class ASHWeapon : public AActor
+class ASHEffect : public AActor
 {
 	GENERATED_BODY()
 	
 public:	
 	// Sets default values for this actor's properties
-	ASHWeapon();
+	ASHEffect();
 
 protected:
 	// Called when the game starts or when spawned
@@ -22,7 +23,7 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
-	USkeletalMeshComponent* weapon;
-
+	UParticleSystemComponent* ParticleComp;
+	UParticleSystem* MFAsset;
+	UParticleSystem* IHAsset;
 };

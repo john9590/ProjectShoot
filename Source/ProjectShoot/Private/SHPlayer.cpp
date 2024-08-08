@@ -2,6 +2,8 @@
 
 
 #include "SHPlayer.h"
+#include "SHBullets.h"
+#include "Kismet/GameplayStatics.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 // Sets default values
@@ -11,6 +13,7 @@ ASHPlayer::ASHPlayer()
 	PrimaryActorTick.bCanEverTick = true;
 	isRunning = false;
 	isRotate = false;
+	BulletBP = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), NULL, TEXT("Bullets '/Game/Blueprints/Weapons/Bullets.Bullets_C'")));
 }
 
 // Called when the game starts or when spawned
@@ -23,6 +26,8 @@ void ASHPlayer::BeginPlay()
 	if (weapon) {
 		weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, Socket);
 	}
+	GetWorldTimerManager().SetTimer(FireTimer, this, &ASHPlayer::Fire, 0.1f, true);
+	GetWorldTimerManager().PauseTimer(FireTimer);
 }
 
 // Called every frame
@@ -46,7 +51,8 @@ void ASHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASHPlayer::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ASHPlayer::StopJumping);
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &ASHPlayer::StartStopRun);
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASHPlayer::Fire);
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASHPlayer::FireStart);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ASHPlayer::FireEnd);
 }
 
 void ASHPlayer::MoveFront(float val)
@@ -83,7 +89,25 @@ void ASHPlayer::LookUp(float val)
 
 void ASHPlayer::Fire()
 {
-	weapon->Fire(GetActorLocation() + GetActorRightVector() * 75. + GetActorUpVector() * 100., GetBaseAimRotation());
+	FActorSpawnParameters param;
+	ASHBullets* bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP,
+		GetActorLocation() + GetActorRightVector() * 75. +
+		GetActorUpVector() * 100., GetControlRotation(), param);
+	//AddControllerPitchInput(-0.5f); //반동 제어 timeline 수정 필요
+	//weapon->FireSet(GetActorLocation() + GetActorRightVector() * 75. + 
+		//GetActorUpVector() * 100., GetControlRotation());//GetBaseAimRotation());
+}
+
+void ASHPlayer::FireStart()
+{
+	emitter = UGameplayStatics::SpawnEmitterAttached(MFAsset, weapon->GetRootComponent(), TEXT("MuzzleFlashSocket"));
+	GetWorldTimerManager().UnPauseTimer(FireTimer);
+}
+
+void ASHPlayer::FireEnd()
+{
+	if (emitter) emitter->DestroyComponent();
+	GetWorldTimerManager().PauseTimer(FireTimer);
 }
 
 bool ASHPlayer::GetIsRunning()
@@ -98,7 +122,8 @@ bool ASHPlayer::GetIsRotate()
 
 FRotator ASHPlayer::GetAim()
 {
-	return ActorToWorld().InverseTransformVector(GetBaseAimRotation().Vector()).Rotation();
+	return ActorToWorld().InverseTransformVector(
+		GetBaseAimRotation().Vector()).Rotation();
 }
 
 void ASHPlayer::StartStopRun()

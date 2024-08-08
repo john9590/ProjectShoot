@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
+#include "Particles/ParticleSystemComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "SHBullets.generated.h"
 
@@ -33,5 +34,7 @@ public:
 	USphereComponent* collision;
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	UProjectileMovementComponent* MovementComp;
-
+	UPROPERTY(EditAnyWhere)
+	UParticleSystem* IHAsset;
+private:
 };

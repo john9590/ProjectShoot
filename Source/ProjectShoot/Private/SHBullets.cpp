@@ -2,6 +2,7 @@
 
 
 #include "SHBullets.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ASHBullets::ASHBullets()
@@ -38,6 +39,7 @@ void ASHBullets::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other
 
 void ASHBullets::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	
+	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), IHAsset, GetActorTransform(), true);
+	//while (!Destroy());
 }
 
