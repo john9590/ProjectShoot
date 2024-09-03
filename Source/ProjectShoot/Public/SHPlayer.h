@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "Particles/ParticleSystemComponent.h"
+#include "GameFramework/SpringArmComponent.h"
+#include "Camera/CameraComponent.h"
 #include "SHWeapon.h"
 #include "SHPlayer.generated.h"
 
@@ -37,8 +39,10 @@ private:
 	void Fire();
 	void FireStart();
 	void FireEnd();
+	void ZoomStart();
 	bool isRunning;
 	bool isRotate;
+	bool isZoom;
 	ASHWeapon* weapon;
 	FTimerHandle FireTimer;
 	UClass* BulletBP;
@@ -53,4 +57,11 @@ public:
 	FRotator GetAim();
 	UPROPERTY(EditAnyWhere)
 	UParticleSystem* MFAsset;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	USpringArmComponent* SpringArm;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	UCameraComponent* TpsCamera;
+	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
+	USkeletalMeshComponent* FpsWeapon;
+	
 };
