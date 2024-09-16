@@ -7,6 +7,7 @@
 #include "Components/SphereComponent.h"
 #include "Particles/ParticleSystemComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
+#include "GameFramework/Character.h"
 #include "SHBullets.generated.h"
 
 UCLASS()
@@ -36,5 +37,7 @@ public:
 	UProjectileMovementComponent* MovementComp;
 	UPROPERTY(EditAnyWhere)
 	UParticleSystem* IHAsset;
+	UPROPERTY(EditAnyWhere)
+	UParticleSystem* BDAsset;
 private:
 };

@@ -2,6 +2,7 @@
 
 
 #include "SHBullets.h"
+#include "SHWeapon.h"
 #include "Kismet/GameplayStatics.h"
 
 // Sets default values
@@ -28,18 +29,31 @@ void ASHBullets::BeginPlay()
 void ASHBullets::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
 }
 
-void ASHBullets::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* Other, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void ASHBullets::BeginOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	Other->GetActorLocation();
-	while(!Destroy());
+	//UE_LOG(LogTemp, Log, TEXT("%s == %s"), *(GetActorLocation().ToString()), *(GetInstigator()->GetName()));
+	if (!GetInstigator()) return;
+	if (OtherActor == GetInstigator()) return;
+	if (Cast<ASHBullets>(OtherActor)) return;
+	if (Cast<ASHWeapon>(OtherActor)) return;
+	if (Cast<ACharacter>(OtherActor)) UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BDAsset, GetActorTransform(), true);
+	else UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), IHAsset, GetActorTransform(), true);
+	UE_LOG(LogTemp, Log, TEXT("%s == %s"), *(OtherActor->GetName()), *(GetInstigator()->GetName()));
+	//UGameplayStatics::ApplyDamage(OtherActor, 10.f, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+	while (!Destroy());
 }
 
 void ASHBullets::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
-	UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), IHAsset, GetActorTransform(), true);
-	//while (!Destroy());
+	UE_LOG(LogTemp, Log, TEXT("%s == %s"), *(GetActorLocation().ToString()), *(GetInstigator()->GetName()));
+	if (OtherActor == GetInstigator()) return;
+	if (Cast<ASHWeapon>(OtherActor)) return;
+	if (Cast<ACharacter>(OtherActor)) UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), BDAsset, GetActorTransform(), true);
+	else UGameplayStatics::SpawnEmitterAtLocation(GetWorld(), IHAsset, GetActorTransform(), true);
+	UE_LOG(LogTemp, Log, TEXT("%s == %s"), *(OtherActor->GetName()), *(GetInstigator()->GetName()));
+	UGameplayStatics::ApplyDamage(OtherActor, 10.f, GetInstigator()->GetController(), this, UDamageType::StaticClass());
+	while (!Destroy());
 }
 

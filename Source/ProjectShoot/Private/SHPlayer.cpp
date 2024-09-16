@@ -15,6 +15,7 @@ ASHPlayer::ASHPlayer()
 	isRunning = false;
 	isRotate = false;
 	isZoom = false;
+
 	BulletBP = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), NULL, TEXT("Bullets '/Game/Blueprints/Weapons/Bullets.Bullets_C'")));
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
 	SpringArm->SetupAttachment(RootComponent);
@@ -23,6 +24,7 @@ ASHPlayer::ASHPlayer()
 	TpsCamera->SetupAttachment(SpringArm);
 	FpsWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WEAPON"));
 	FpsWeapon->SetupAttachment(TpsCamera);
+
 }
 
 // Called when the game starts or when spawned
@@ -102,11 +104,17 @@ void ASHPlayer::LookUp(float val)
 void ASHPlayer::Fire()
 {
 	FActorSpawnParameters param;
-	if (isZoom) ASHBullets* bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, 
+	ASHBullets* bullet;
+	if (isZoom) bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, 
 		GetActorLocation() + GetActorUpVector() * 60.f, GetControlRotation(), param);
-	else ASHBullets* bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP,
+	else bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP,
 		GetActorLocation() + GetActorRightVector() * 75.f +
 		GetActorUpVector() * 100., GetControlRotation(), param);
+	if (bullet) {
+		bullet->SetInstigator(this);
+		bullet->collision->IgnoreActorWhenMoving(this, true);
+		//bullet->collision->IgnoreActorWhenMoving(FpsWeapon, true);
+	}
 	//AddControllerPitchInput(-0.5f); //반동 제어 timeline 수정 필요
 	//weapon->FireSet(GetActorLocation() + GetActorRightVector() * 75. + 
 		//GetActorUpVector() * 100., GetControlRotation());//GetBaseAimRotation());
@@ -121,8 +129,9 @@ void ASHPlayer::FireStart()
 
 void ASHPlayer::FireEnd()
 {
-	if (emitter) emitter->DestroyComponent();
+	if (emitter) emitter->Complete();
 	GetWorldTimerManager().PauseTimer(FireTimer);
+	emitter = NULL;
 }
 
 void ASHPlayer::ZoomStart()
