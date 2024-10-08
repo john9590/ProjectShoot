@@ -3,9 +3,11 @@
 
 #include "SHPlayer.h"
 #include "SHBullets.h"
+#include "SHPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 
 // Sets default values
 ASHPlayer::ASHPlayer()
@@ -15,6 +17,9 @@ ASHPlayer::ASHPlayer()
 	isRunning = false;
 	isRotate = false;
 	isZoom = false;
+	isFire = false;
+	Health = 100.f;
+	bullettime = 0.f;
 
 	BulletBP = Cast<UClass>(StaticLoadObject(UClass::StaticClass(), NULL, TEXT("Bullets '/Game/Blueprints/Weapons/Bullets.Bullets_C'")));
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
@@ -24,6 +29,7 @@ ASHPlayer::ASHPlayer()
 	TpsCamera->SetupAttachment(SpringArm);
 	FpsWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WEAPON"));
 	FpsWeapon->SetupAttachment(TpsCamera);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 
 }
 
@@ -36,7 +42,7 @@ void ASHPlayer::BeginPlay()
 	if (weapon) {
 		weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("b_RightHand"));
 	}
-	GetWorldTimerManager().SetTimer(FireTimer, this, &ASHPlayer::Fire, 0.1f, true);
+	GetWorldTimerManager().SetTimer(FireTimer, this, &ASHPlayer::callFire, 0.1f, true);
 	GetWorldTimerManager().PauseTimer(FireTimer);
 	FpsWeapon->SetVisibility(false);
 }
@@ -48,6 +54,31 @@ void ASHPlayer::Tick(float DeltaTime)
 	if (!isRunning && GetCharacterMovement()->GetMaxSpeed() > 600.f) {
 		//Tick 말고 TimeLine으로 바꿀생각
 		GetCharacterMovement()->MaxWalkSpeed = fmaxf(GetCharacterMovement()->MaxWalkSpeed - 2048.f * DeltaTime, 600.f);
+	}
+
+	FActorSpawnParameters param;
+	//ASHBullets* bullet;
+	FHitResult hitResult;
+	return;
+	bullettime += DeltaTime;
+	if (!isFire && bullettime < 1000.f) return;
+	bullettime = 0.f;
+	Fire();
+	return;
+	FVector start = FVector::ZeroVector;
+	FVector end = FVector::ZeroVector;
+	if (isZoom) start = GetActorLocation() + GetActorUpVector() * 60.f;
+	else start = GetActorLocation() + GetActorRightVector() * 75.f + GetActorUpVector() * 90.f;
+	end = start + GetControlRotation().Vector() * 10000.f;
+
+	GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility);
+	DrawDebugLine(GetWorld(), start, end, FColor::Red, false, 1.0f);
+
+	if (hitResult.GetActor()) {
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Hit Actor Name: %s"), *hitResult.GetActor()->GetName()));
+		if (ASHPlayer* player = Cast<ASHPlayer>(hitResult.GetActor())) {
+			player->Health -= 10.f;
+		}
 	}
 }
 
@@ -66,6 +97,16 @@ void ASHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASHPlayer::FireStart);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &ASHPlayer::FireEnd);
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ASHPlayer::ZoomStart);
+}
+
+float ASHPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	if (DamageAmount > 0.0f) {
+		Health -= DamageAmount;
+	}
+
+	return ActualDamage;
 }
 
 void ASHPlayer::MoveFront(float val)
@@ -101,11 +142,31 @@ void ASHPlayer::LookUp(float val)
 	}
 }
 
-void ASHPlayer::Fire()
+/*bool ASHPlayer::Fire_Validate() {
+	return true;
+}
+
+void ASHPlayer::Fire_Implementation()
 {
 	FActorSpawnParameters param;
 	ASHBullets* bullet;
-	if (isZoom) bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, 
+	FHitResult hitResult;
+	FVector start = FVector::ZeroVector;
+	FVector end = FVector::ZeroVector;
+	/*if (isZoom) start = GetActorLocation() + GetActorUpVector() * 60.f;
+	else start = GetActorLocation() + GetActorRightVector() * 75.f + GetActorUpVector() * 90.f;
+	end = start + GetControlRotation().Vector() * 10000.f;
+
+	GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility);
+	DrawDebugLine(GetWorld(), start, end, FColor::Red, false, 1.0f);
+
+	if (hitResult.GetActor()) {
+		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Hit Actor Name: %s"), *hitResult.GetActor()->GetName()));
+		if (ASHPlayer* player = Cast<ASHPlayer>(hitResult.GetActor())) {
+			player->BPHealth(player);
+		}
+	}*/
+	/*if (isZoom) bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP,
 		GetActorLocation() + GetActorUpVector() * 60.f, GetControlRotation(), param);
 	else bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP,
 		GetActorLocation() + GetActorRightVector() * 75.f +
@@ -114,16 +175,18 @@ void ASHPlayer::Fire()
 		bullet->SetInstigator(this);
 		bullet->collision->IgnoreActorWhenMoving(this, true);
 		//bullet->collision->IgnoreActorWhenMoving(FpsWeapon, true);
-	}
+	}*/
 	//AddControllerPitchInput(-0.5f); //반동 제어 timeline 수정 필요
 	//weapon->FireSet(GetActorLocation() + GetActorRightVector() * 75. + 
 		//GetActorUpVector() * 100., GetControlRotation());//GetBaseAimRotation());
-}
+//}
 
 void ASHPlayer::FireStart()
 {
 	if (isRunning) StartStopRun();
 	if (!isZoom) emitter = UGameplayStatics::SpawnEmitterAttached(MFAsset, weapon->GetRootComponent(), TEXT("MuzzleFlashSocket"));
+	isFire = true;
+	bullettime = 0.f;
 	GetWorldTimerManager().UnPauseTimer(FireTimer);
 }
 
@@ -132,6 +195,7 @@ void ASHPlayer::FireEnd()
 	if (emitter) emitter->Complete();
 	GetWorldTimerManager().PauseTimer(FireTimer);
 	emitter = NULL;
+	isFire = false;
 }
 
 void ASHPlayer::ZoomStart()
@@ -162,13 +226,7 @@ void ASHPlayer::ZoomStart()
 			SpringArm->TargetArmLength = 300.f;
 		}
 	}
-	//GetCapsuleMesh()
-	//if (isZoom) FpsCamera->Activate();
-	//else FpsCamera->Deactivate();
-	//FVector Loc = weapon->weapon->GetBoneLocation(TEXT("MuzzleFlashSocket"), EBoneSpaces::ComponentSpace);
-	//Loc += GetMesh()->GetBoneLocation(TEXT("b_RightHand"), EBoneSpaces::ComponentSpace);
-	//Loc -= FVector(-300., -75., 0.);
-	//SpringArm->SetRelativeLocation(Loc);
+
 }
 
 bool ASHPlayer::GetIsRunning()
@@ -195,4 +253,35 @@ void ASHPlayer::StartStopRun()
 		if (isZoom) ZoomStart();
 		FireEnd();
 	}
+}
+
+void ASHPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(ASHPlayer, Health);
+}
+
+void ASHPlayer::MultiUpdateHealth_Implementation(float NewHealth)
+{
+	// 클라이언트에서 호출될 때 새로운 체력 값으로 업데이트
+	Health = NewHealth;
+	UE_LOG(LogTemp, Log, TEXT("Health updated to: %f"), NewHealth);
+}
+
+void ASHPlayer::serverHealth_Implementation(float delta)
+{
+	UE_LOG(LogTemp, Log, TEXT("Health updated to: %f"), delta);
+	Health -= delta;
+	MultiUpdateHealth(Health);
+}
+
+bool ASHPlayer::serverHealth_Validate(float delta)
+{
+	return delta >= 0.f;
+}
+
+void ASHPlayer::callFire()
+{
+	Fire();
 }

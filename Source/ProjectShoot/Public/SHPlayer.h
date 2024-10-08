@@ -30,6 +30,7 @@ public:
 
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 private:
 	void MoveFront(float val);
@@ -37,17 +38,16 @@ private:
 	void StartStopRun();
 	void LookRight(float val);
 	void LookUp(float val);
-	void Fire();
 	void FireStart();
 	void FireEnd();
 	void ZoomStart();
-	bool isRunning;
-	bool isRotate;
-	bool isZoom;
+
+
 	ASHWeapon* weapon;
 	FTimerHandle FireTimer;
 	UClass* BulletBP;
 	UParticleSystemComponent* emitter;
+	float bullettime;
 
 public:
 	UFUNCTION(BlueprintCallable)
@@ -64,5 +64,36 @@ public:
 	UCameraComponent* TpsCamera;
 	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	USkeletalMeshComponent* FpsWeapon;
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = Health)
+	float Health;
+
+	UFUNCTION(NetMulticast, Reliable)
+	void MultiUpdateHealth(float NewHealth);
+	virtual void MultiUpdateHealth_Implementation(float NewHealth);
+
+	UFUNCTION(Server, Reliable, WithValidation)
+	void serverHealth(float delta);
+
+	void serverHealth_Implementation(float delta);
+	bool serverHealth_Validate(float delta);
+	
+	UFUNCTION(BlueprintImplementableEvent)
+	void BPHealth(AActor* delta);
+
+	void callFire();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void Fire();
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = run)
+	bool isRunning;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = rotate)
+	bool isRotate;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = zoom)
+	bool isZoom;
+	bool isFire;
 };
