@@ -88,6 +88,10 @@ public:
 	void serverzoom();
 	UFUNCTION(Server, Reliable, WithValidation)
 	void serverFire();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void serverRun();
+	UFUNCTION(Server, Reliable, WithValidation)
+	void serverModifySpeed(float speed);
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = run)
 	bool isRunning;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = rotate)

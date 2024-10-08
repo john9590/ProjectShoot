@@ -53,6 +53,7 @@ void ASHPlayer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	if (!isRunning && GetCharacterMovement()->GetMaxSpeed() > 600.f) {
 		//Tick 말고 TimeLine으로 바꿀생각
+		if (!HasAuthority()) serverModifySpeed(fmaxf(GetCharacterMovement()->MaxWalkSpeed - 2048.f * DeltaTime, 600.f));
 		GetCharacterMovement()->MaxWalkSpeed = fmaxf(GetCharacterMovement()->MaxWalkSpeed - 2048.f * DeltaTime, 600.f);
 	}
 }
@@ -117,6 +118,14 @@ void ASHPlayer::LookUp(float val)
 	}
 }
 
+
+void ASHPlayer::serverModifySpeed_Implementation(float speed) {
+	GetCharacterMovement()->MaxWalkSpeed = speed;
+}
+
+bool ASHPlayer::serverModifySpeed_Validate(float speed) {
+	return true;
+}
 
 void ASHPlayer::serverFire_Implementation() {
 	ASHBullets* bullet;
@@ -210,8 +219,22 @@ FRotator ASHPlayer::GetAim()
 		GetBaseAimRotation().Vector()).Rotation();
 }
 
+void ASHPlayer::serverRun_Implementation() {
+	isRunning = !isRunning;
+	if (isRunning) {
+		GetCharacterMovement()->MaxWalkSpeed = 1200.f;
+		if (isZoom) ZoomStart();
+		FireEnd();
+	}
+}
+
+bool ASHPlayer::serverRun_Validate() {
+	return true;
+}
+
 void ASHPlayer::StartStopRun()
 {
+	if (!HasAuthority()) serverRun();
 	isRunning = !isRunning;
 	if (isRunning) {
 		GetCharacterMovement()->MaxWalkSpeed = 1200.f;
@@ -250,14 +273,16 @@ bool ASHPlayer::serverHealth_Validate(float delta)
 void ASHPlayer::callFire()
 {
 	if (!HasAuthority()) serverFire();
-	ASHBullets* bullet;
-	FActorSpawnParameters param;
-	FVector location = GetActorLocation();
-	if (isZoom) location += GetActorUpVector() * 60.f;
-	else location += GetActorRightVector() * 75.f + GetActorUpVector() * 100.f;
-	bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, location, GetControlRotation(), param);
-	if (bullet) {
-		bullet->SetInstigator(this);
-		bullet->collision->IgnoreActorWhenMoving(this, true);
+	else {
+		ASHBullets* bullet;
+		FActorSpawnParameters param;
+		FVector location = GetActorLocation();
+		if (isZoom) location += GetActorUpVector() * 60.f;
+		else location += GetActorRightVector() * 75.f + GetActorUpVector() * 100.f;
+		bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, location, GetControlRotation(), param);
+		if (bullet) {
+			bullet->SetInstigator(this);
+			bullet->collision->IgnoreActorWhenMoving(this, true);
+		}
 	}
 }
