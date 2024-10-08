@@ -201,6 +201,9 @@ void ASHPlayer::FireEnd()
 void ASHPlayer::ZoomStart()
 {
 	//UE_LOG(LogTemp, Log, TEXT("asdfasdf"));
+	if (!HasAuthority()) {
+		serverzoom();
+	}
 	isZoom = !isZoom;
 	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(this, GetGameInstance()->GetFirstGamePlayer()->GetControllerId());
 	if (PlayerController)
@@ -227,6 +230,14 @@ void ASHPlayer::ZoomStart()
 		}
 	}
 
+}
+
+void ASHPlayer::serverzoom_Implementation() {
+	isZoom = !isZoom;
+}
+
+bool ASHPlayer::serverzoom_Validate() {
+	return true;
 }
 
 bool ASHPlayer::GetIsRunning()
@@ -260,6 +271,7 @@ void ASHPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(ASHPlayer, Health);
+	DOREPLIFETIME(ASHPlayer, isZoom);
 }
 
 void ASHPlayer::MultiUpdateHealth_Implementation(float NewHealth)

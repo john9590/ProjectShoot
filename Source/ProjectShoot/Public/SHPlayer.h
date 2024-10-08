@@ -87,7 +87,8 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void Fire();
-
+	UFUNCTION(Server, Reliable, WithValidation)
+	void serverzoom();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = run)
 	bool isRunning;
