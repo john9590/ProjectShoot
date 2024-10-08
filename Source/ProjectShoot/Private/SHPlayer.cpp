@@ -117,44 +117,6 @@ void ASHPlayer::LookUp(float val)
 	}
 }
 
-/*bool ASHPlayer::Fire_Validate() {
-	return true;
-}
-
-void ASHPlayer::Fire()
-{
-	FActorSpawnParameters param;
-	ASHBullets* bullet;
-	FHitResult hitResult;
-	FVector start = FVector::ZeroVector;
-	FVector end = FVector::ZeroVector;
-	/*if (isZoom) start = GetActorLocation() + GetActorUpVector() * 60.f;
-	else start = GetActorLocation() + GetActorRightVector() * 75.f + GetActorUpVector() * 90.f;
-	end = start + GetControlRotation().Vector() * 10000.f;
-
-	GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility);
-	DrawDebugLine(GetWorld(), start, end, FColor::Red, false, 1.0f);
-
-	if (hitResult.GetActor()) {
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Hit Actor Name: %s"), *hitResult.GetActor()->GetName()));
-		if (ASHPlayer* player = Cast<ASHPlayer>(hitResult.GetActor())) {
-			player->BPHealth(player);
-		}
-	}*/
-	/*if (isZoom) bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP,
-		GetActorLocation() + GetActorUpVector() * 60.f, GetControlRotation(), param);
-	else bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP,
-		GetActorLocation() + GetActorRightVector() * 75.f +
-		GetActorUpVector() * 100., GetControlRotation(), param);
-	if (bullet) {
-		bullet->SetInstigator(this);
-		bullet->collision->IgnoreActorWhenMoving(this, true);
-		//bullet->collision->IgnoreActorWhenMoving(FpsWeapon, true);
-	}*/
-	//AddControllerPitchInput(-0.5f); //반동 제어 timeline 수정 필요
-	//weapon->FireSet(GetActorLocation() + GetActorRightVector() * 75. + 
-		//GetActorUpVector() * 100., GetControlRotation());//GetBaseAimRotation());
-//}
 
 void ASHPlayer::serverFire_Implementation() {
 	ASHBullets* bullet;
