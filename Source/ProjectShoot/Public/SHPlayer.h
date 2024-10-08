@@ -41,6 +41,7 @@ private:
 	void FireStart();
 	void FireEnd();
 	void ZoomStart();
+	void CondJump();
 
 
 	ASHWeapon* weapon;
@@ -54,6 +55,8 @@ public:
 	bool GetIsRunning();
 	UFUNCTION(BlueprintCallable)
 	bool GetIsRotate();
+	UFUNCTION(BlueprintCallable)
+	bool GetIsDeath();
 	UFUNCTION(BlueprintCallable)
 	FRotator GetAim();
 	UPROPERTY(EditAnyWhere)
@@ -99,4 +102,6 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = zoom)
 	bool isZoom;
 	bool isFire;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = death)
+	bool isDeath;
 };

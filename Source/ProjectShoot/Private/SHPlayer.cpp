@@ -18,6 +18,7 @@ ASHPlayer::ASHPlayer()
 	isRotate = false;
 	isZoom = false;
 	isFire = false;
+	isDeath = false;
 	Health = 100.f;
 	bullettime = 0.f;
 
@@ -67,7 +68,7 @@ void ASHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAxis("MoveRight", this, &ASHPlayer::MoveRight);
 	PlayerInputComponent->BindAxis("LookUp", this, &ASHPlayer::LookUp);
 	PlayerInputComponent->BindAxis("LookRight", this, &ASHPlayer::LookRight);
-	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASHPlayer::Jump);
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ASHPlayer::CondJump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ASHPlayer::StopJumping);
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &ASHPlayer::StartStopRun);
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &ASHPlayer::FireStart);
@@ -79,14 +80,21 @@ float ASHPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 {
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	if (DamageAmount > 0.0f) {
-		Health -= DamageAmount;
+		if (!HasAuthority()) serverHealth(DamageAmount);
+		else {
+			Health -= DamageAmount;
+			if (Health <= 0.f) {
+				Health = 0.f;
+				isDeath = true;
+			}
+		}
 	}
-
 	return ActualDamage;
 }
 
 void ASHPlayer::MoveFront(float val)
 {
+	if (isDeath) return;
 	if (val != 0.f && Controller) {
 		AddMovementInput(GetActorForwardVector(), val);
 	}
@@ -95,6 +103,7 @@ void ASHPlayer::MoveFront(float val)
 
 void ASHPlayer::MoveRight(float val)
 {
+	if (isDeath) return;
 	if (val != 0.f && Controller) {
 		if (isRunning) StartStopRun();
 		AddMovementInput(GetActorRightVector(), val);
@@ -103,6 +112,7 @@ void ASHPlayer::MoveRight(float val)
 
 void ASHPlayer::LookRight(float val)
 {
+	if (isDeath) return;
 	if (val != 0.f && Controller) {
 		AddControllerYawInput(val);
 	}
@@ -147,6 +157,7 @@ bool ASHPlayer::serverFire_Validate() {
 
 void ASHPlayer::FireStart()
 {
+	if (isDeath) return;
 	if (isRunning) StartStopRun();
 	if (!isZoom) emitter = UGameplayStatics::SpawnEmitterAttached(MFAsset, weapon->GetRootComponent(), TEXT("MuzzleFlashSocket"));
 	isFire = true;
@@ -156,6 +167,7 @@ void ASHPlayer::FireStart()
 
 void ASHPlayer::FireEnd()
 {
+	if (isDeath) return;
 	if (emitter) emitter->Complete();
 	GetWorldTimerManager().PauseTimer(FireTimer);
 	emitter = NULL;
@@ -164,6 +176,7 @@ void ASHPlayer::FireEnd()
 
 void ASHPlayer::ZoomStart()
 {
+	if (isDeath) return;
 	if (!HasAuthority()) {
 		serverzoom();
 	}
@@ -195,6 +208,12 @@ void ASHPlayer::ZoomStart()
 
 }
 
+void ASHPlayer::CondJump()
+{
+	if (isDeath) return;
+	Jump();
+}
+
 void ASHPlayer::serverzoom_Implementation() {
 	isZoom = !isZoom;
 }
@@ -219,6 +238,11 @@ FRotator ASHPlayer::GetAim()
 		GetBaseAimRotation().Vector()).Rotation();
 }
 
+bool ASHPlayer::GetIsDeath()
+{
+	return isDeath;
+}
+
 void ASHPlayer::serverRun_Implementation() {
 	isRunning = !isRunning;
 	if (isRunning) {
@@ -234,6 +258,7 @@ bool ASHPlayer::serverRun_Validate() {
 
 void ASHPlayer::StartStopRun()
 {
+	if (isDeath) return;
 	if (!HasAuthority()) serverRun();
 	isRunning = !isRunning;
 	if (isRunning) {
@@ -249,6 +274,7 @@ void ASHPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 
 	DOREPLIFETIME(ASHPlayer, Health);
 	DOREPLIFETIME(ASHPlayer, isZoom);
+	DOREPLIFETIME(ASHPlayer, isDeath);
 }
 
 void ASHPlayer::MultiUpdateHealth_Implementation(float NewHealth)
@@ -260,9 +286,11 @@ void ASHPlayer::MultiUpdateHealth_Implementation(float NewHealth)
 
 void ASHPlayer::serverHealth_Implementation(float delta)
 {
-	UE_LOG(LogTemp, Log, TEXT("Health updated to: %f"), delta);
 	Health -= delta;
-	MultiUpdateHealth(Health);
+	if (Health <= 0.f) {
+		Health = 0.f;
+		isDeath = true;
+	}
 }
 
 bool ASHPlayer::serverHealth_Validate(float delta)
