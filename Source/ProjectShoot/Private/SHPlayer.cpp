@@ -55,31 +55,6 @@ void ASHPlayer::Tick(float DeltaTime)
 		//Tick 말고 TimeLine으로 바꿀생각
 		GetCharacterMovement()->MaxWalkSpeed = fmaxf(GetCharacterMovement()->MaxWalkSpeed - 2048.f * DeltaTime, 600.f);
 	}
-
-	FActorSpawnParameters param;
-	//ASHBullets* bullet;
-	FHitResult hitResult;
-	return;
-	bullettime += DeltaTime;
-	if (!isFire && bullettime < 1000.f) return;
-	bullettime = 0.f;
-	Fire();
-	return;
-	FVector start = FVector::ZeroVector;
-	FVector end = FVector::ZeroVector;
-	if (isZoom) start = GetActorLocation() + GetActorUpVector() * 60.f;
-	else start = GetActorLocation() + GetActorRightVector() * 75.f + GetActorUpVector() * 90.f;
-	end = start + GetControlRotation().Vector() * 10000.f;
-
-	GetWorld()->LineTraceSingleByChannel(hitResult, start, end, ECC_Visibility);
-	DrawDebugLine(GetWorld(), start, end, FColor::Red, false, 1.0f);
-
-	if (hitResult.GetActor()) {
-		GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Hit Actor Name: %s"), *hitResult.GetActor()->GetName()));
-		if (ASHPlayer* player = Cast<ASHPlayer>(hitResult.GetActor())) {
-			player->Health -= 10.f;
-		}
-	}
 }
 
 // Called to bind functionality to input
@@ -146,7 +121,7 @@ void ASHPlayer::LookUp(float val)
 	return true;
 }
 
-void ASHPlayer::Fire_Implementation()
+void ASHPlayer::Fire()
 {
 	FActorSpawnParameters param;
 	ASHBullets* bullet;
@@ -181,6 +156,24 @@ void ASHPlayer::Fire_Implementation()
 		//GetActorUpVector() * 100., GetControlRotation());//GetBaseAimRotation());
 //}
 
+void ASHPlayer::serverFire_Implementation() {
+	ASHBullets* bullet;
+	FActorSpawnParameters param;
+	FVector location = GetActorLocation();
+	if (isZoom) location += GetActorUpVector() * 60.f;
+	else location += GetActorRightVector() * 75.f + GetActorUpVector() * 100.f;
+	bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, location, GetControlRotation(), param);
+	if (bullet) {
+		bullet->SetInstigator(this);
+		bullet->collision->IgnoreActorWhenMoving(this, true);
+	}
+	//AddControllerPitchInput(-0.5f); //반동 제어 timeline 수정 필요
+}
+
+bool ASHPlayer::serverFire_Validate() {
+	return true;
+}
+
 void ASHPlayer::FireStart()
 {
 	if (isRunning) StartStopRun();
@@ -200,7 +193,6 @@ void ASHPlayer::FireEnd()
 
 void ASHPlayer::ZoomStart()
 {
-	//UE_LOG(LogTemp, Log, TEXT("asdfasdf"));
 	if (!HasAuthority()) {
 		serverzoom();
 	}
@@ -295,5 +287,15 @@ bool ASHPlayer::serverHealth_Validate(float delta)
 
 void ASHPlayer::callFire()
 {
-	Fire();
+	if (!HasAuthority()) serverFire();
+	ASHBullets* bullet;
+	FActorSpawnParameters param;
+	FVector location = GetActorLocation();
+	if (isZoom) location += GetActorUpVector() * 60.f;
+	else location += GetActorRightVector() * 75.f + GetActorUpVector() * 100.f;
+	bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, location, GetControlRotation(), param);
+	if (bullet) {
+		bullet->SetInstigator(this);
+		bullet->collision->IgnoreActorWhenMoving(this, true);
+	}
 }

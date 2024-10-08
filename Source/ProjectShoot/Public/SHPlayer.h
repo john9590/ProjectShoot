@@ -76,9 +76,6 @@ public:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void serverHealth(float delta);
-
-	void serverHealth_Implementation(float delta);
-	bool serverHealth_Validate(float delta);
 	
 	UFUNCTION(BlueprintImplementableEvent)
 	void BPHealth(AActor* delta);
@@ -89,7 +86,8 @@ public:
 	void Fire();
 	UFUNCTION(Server, Reliable, WithValidation)
 	void serverzoom();
-
+	UFUNCTION(Server, Reliable, WithValidation)
+	void serverFire();
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = run)
 	bool isRunning;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = rotate)
