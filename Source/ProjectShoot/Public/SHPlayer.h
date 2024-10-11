@@ -61,11 +61,8 @@ public:
 	FRotator GetAim();
 	UPROPERTY(EditAnyWhere)
 	UParticleSystem* MFAsset;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	USpringArmComponent* SpringArm;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	UCameraComponent* TpsCamera;
-	UPROPERTY(EditAnyWhere, BlueprintReadWrite)
 	USkeletalMeshComponent* FpsWeapon;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;

@@ -26,12 +26,27 @@ ASHPlayer::ASHPlayer()
 	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SPRINGARM"));
 	SpringArm->SetupAttachment(RootComponent);
 	SpringArm->SetRelativeLocation(FVector(0., 0., 90.));
+	SpringArm->SocketOffset = FVector(0.f, 75.f, 0.f);
+	SpringArm->bUsePawnControlRotation = true;
 	TpsCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("TPSCAMERA"));
 	TpsCamera->SetupAttachment(SpringArm);
 	FpsWeapon = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("WEAPON"));
 	FpsWeapon->SetupAttachment(TpsCamera);
+	FpsWeapon->SetRelativeLocation(FVector(0.f, 0.f, -20.f));
+	FpsWeapon->SetRelativeRotation(FRotator(0.f, -90.f, 0.f));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> WeaponAsset(TEXT("Rifle '/Game/Weapons/Rifle'"));
+	if (WeaponAsset.Succeeded()) FpsWeapon->SkeletalMesh = WeaponAsset.Object;
+	GetCapsuleComponent()->SetCapsuleHalfHeight(110.f);
+	GetCapsuleComponent()->SetCapsuleRadius(65.f);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
-
+	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimBP(TEXT("/Game/Blueprints/Animations/TPP_Anim"));
+	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
+	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -86.f));
+	GetMesh()->SetRelativeRotation(FRotator(0.f, -75.f, 0.f));
+	if (AnimBP.Succeeded()) GetMesh()->SetAnimClass(AnimBP.Class);
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshAsset(TEXT("HeroTPP '/Game/Characters/HeroTPP/HeroTPP.HeroTPP'"));
+	if (MeshAsset.Succeeded()) GetMesh()->SkeletalMesh = MeshAsset.Object;
+	GetCharacterMovement()->JumpZVelocity = 840.f;
 }
 
 // Called when the game starts or when spawned
@@ -277,6 +292,7 @@ void ASHPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ASHPlayer, isZoom);
 	DOREPLIFETIME(ASHPlayer, isDeath);
 	DOREPLIFETIME(ASHPlayer, isRotate);
+	DOREPLIFETIME(ASHPlayer, isRunning);
 }
 
 void ASHPlayer::MultiUpdateHealth_Implementation(float NewHealth)
