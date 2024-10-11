@@ -86,6 +86,7 @@ float ASHPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 			if (Health <= 0.f) {
 				Health = 0.f;
 				isDeath = true;
+				GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 			}
 		}
 	}
@@ -275,6 +276,7 @@ void ASHPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ASHPlayer, Health);
 	DOREPLIFETIME(ASHPlayer, isZoom);
 	DOREPLIFETIME(ASHPlayer, isDeath);
+	DOREPLIFETIME(ASHPlayer, isRotate);
 }
 
 void ASHPlayer::MultiUpdateHealth_Implementation(float NewHealth)
@@ -290,6 +292,7 @@ void ASHPlayer::serverHealth_Implementation(float delta)
 	if (Health <= 0.f) {
 		Health = 0.f;
 		isDeath = true;
+		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
 }
 
