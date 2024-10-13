@@ -64,6 +64,7 @@ public:
 	USpringArmComponent* SpringArm;
 	UCameraComponent* TpsCamera;
 	USkeletalMeshComponent* FpsWeapon;
+	USkeletalMeshComponent* TpsWeapon;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	

@@ -9,10 +9,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Net/UnrealNetwork.h"
 
-// Sets default values
+// 기본적으로 변수들을 초기화 하고 SpringArm, TPSCamera 등에 SubObject을 생성하여 대입하고 SubObject들의 위치와 회전값을 조정하여 플레이어를 생성
 ASHPlayer::ASHPlayer()
 {
- 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	isRunning = false;
 	isRotate = false;
@@ -49,11 +48,10 @@ ASHPlayer::ASHPlayer()
 	GetCharacterMovement()->JumpZVelocity = 840.f;
 }
 
-// Called when the game starts or when spawned
+// TPS 시점의 weapon을 Mesh의 b_Righthand Bone에 Attach하고 0.1초에 한번씩 실행되는 Timer를 설정
 void ASHPlayer::BeginPlay()
 {
 	Super::BeginPlay();
-	//FActorSpawnParameters SpawnP;
 	weapon = GetWorld()->SpawnActor<ASHWeapon>(FVector::ZeroVector,FRotator(90.,60.,-40.));
 	if (weapon) {
 		weapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::KeepRelativeTransform, TEXT("b_RightHand"));
@@ -63,7 +61,7 @@ void ASHPlayer::BeginPlay()
 	FpsWeapon->SetVisibility(false);
 }
 
-// Called every frame
+// 달리는 상태에서 걷는 상태로 돌아올 때 MaxSpeed를 천천히 줄어주는 기능
 void ASHPlayer::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -74,7 +72,7 @@ void ASHPlayer::Tick(float DeltaTime)
 	}
 }
 
-// Called to bind functionality to input
+// 들어오는 입력을 함수와 바인딩해서 실제로 기능이 작동하도록 만들어주는 함수
 void ASHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
@@ -91,6 +89,7 @@ void ASHPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	PlayerInputComponent->BindAction("Zoom", IE_Pressed, this, &ASHPlayer::ZoomStart);
 }
 
+// Bullet을 통해 맞았을 때 Bullet에서 ApplyDamage를 통해 실행되는 함수, 맞은 데미지 만큼 플레이어의 Health를 깎고 Health가 0이하면 Death처리를 한다.
 float ASHPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -140,7 +139,6 @@ void ASHPlayer::LookUp(float val)
 {
 	if (val != 0.f && Controller) {
 		AddControllerPitchInput(val);
-		//FpsWeapon->AddRelativeRotation(FRotator(0.f, 0.f, val));
 	}
 }
 
@@ -171,6 +169,25 @@ bool ASHPlayer::serverFire_Validate() {
 	return true;
 }
 
+void ASHPlayer::callFire()
+{
+	if (!HasAuthority()) serverFire();
+	else {
+		ASHBullets* bullet;
+		FActorSpawnParameters param;
+		FVector location = GetActorLocation();
+		if (isZoom) location += GetActorUpVector() * 60.f;
+		else location += GetActorRightVector() * 75.f + GetActorUpVector() * 100.f;
+		bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, location, GetControlRotation(), param);
+		if (bullet) {
+			bullet->SetInstigator(this);
+			bullet->collision->IgnoreActorWhenMoving(this, true);
+		}
+	}
+}
+
+
+// LeftClick Pressed시에 실행되는 함수로 총구에 화염 효과를 넣어주며 FireTimer를 시작함
 void ASHPlayer::FireStart()
 {
 	if (isDeath) return;
@@ -181,6 +198,7 @@ void ASHPlayer::FireStart()
 	GetWorldTimerManager().UnPauseTimer(FireTimer);
 }
 
+// LeftClick Released시에 실행되는 함수로 총구에 화염 효과를 끝내고 FireTimer를 중단함
 void ASHPlayer::FireEnd()
 {
 	if (isDeath) return;
@@ -315,21 +333,4 @@ void ASHPlayer::serverHealth_Implementation(float delta)
 bool ASHPlayer::serverHealth_Validate(float delta)
 {
 	return delta >= 0.f;
-}
-
-void ASHPlayer::callFire()
-{
-	if (!HasAuthority()) serverFire();
-	else {
-		ASHBullets* bullet;
-		FActorSpawnParameters param;
-		FVector location = GetActorLocation();
-		if (isZoom) location += GetActorUpVector() * 60.f;
-		else location += GetActorRightVector() * 75.f + GetActorUpVector() * 100.f;
-		bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, location, GetControlRotation(), param);
-		if (bullet) {
-			bullet->SetInstigator(this);
-			bullet->collision->IgnoreActorWhenMoving(this, true);
-		}
-	}
 }

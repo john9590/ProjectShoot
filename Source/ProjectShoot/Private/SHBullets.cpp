@@ -90,12 +90,12 @@ void ASHBullets::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimit
 
 void ASHBullets::ServerApply_Implementation(const FHitResult& HitResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("dlrpehlsp"));
+	//UE_LOG(LogTemp, Warning, TEXT("dlrpehlsp"));
 }
 
 void ASHBullets::ServerApplyDamage_Implementation(AActor* DamagedActor, float DamageAmount)
 {
-	UE_LOG(LogTemp, Warning, TEXT("ServerApplyDamage_Implementation called"));
+	//UE_LOG(LogTemp, Warning, TEXT("ServerApplyDamage_Implementation called"));
 	if (DamagedActor) {
 		ASHPlayer* temp = Cast<ASHPlayer>(DamagedActor);
 		if (temp) {

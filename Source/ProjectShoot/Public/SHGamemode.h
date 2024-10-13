@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameMode.h"
 #include "OnlineSubsystem.h"
+#include "Online/OnlineSessionNames.h"
 #include "Interfaces/OnlineSessionDelegates.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "Templates/SharedPointer.h"
@@ -23,8 +24,15 @@ class PROJECTSHOOT_API ASHGamemode : public AGameMode
 public:
 	ASHGamemode();
 	void OnCreateSessionComplete(FName SessionName, bool bWasSuccssful);
+	void OnFindSessionComplete(bool bWasSuccessful);
+	void OnJoinSessionComplate(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 	void CreateGameSession();
+	void JoinGameSession();
+
 private:
+	TSharedPtr<FOnlineSessionSearch> SessionSearch;
 	IOnlineSessionPtr OnlineSessionInterface;
 	FOnCreateSessionCompleteDelegate CreateSessionCompleteDelegate;
+	FOnFindSessionsCompleteDelegate FindSessionCompleteDelegate;
+	FOnJoinSessionCompleteDelegate JoinSessionCompleteDelegate;
 };
