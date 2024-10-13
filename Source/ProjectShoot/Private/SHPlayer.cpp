@@ -3,7 +3,6 @@
 
 #include "SHPlayer.h"
 #include "SHBullets.h"
-#include "SHPlayerState.h"
 #include "Kismet/GameplayStatics.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -40,7 +39,7 @@ ASHPlayer::ASHPlayer()
 	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Visibility, ECR_Block);
 	static ConstructorHelpers::FClassFinder<UAnimInstance> AnimBP(TEXT("/Game/Blueprints/Animations/TPP_Anim"));
 	GetMesh()->SetAnimationMode(EAnimationMode::AnimationBlueprint);
-	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -86.f));
+	GetMesh()->SetRelativeLocation(FVector(0.f, 0.f, -110.f));
 	GetMesh()->SetRelativeRotation(FRotator(0.f, -75.f, 0.f));
 	if (AnimBP.Succeeded()) GetMesh()->SetAnimClass(AnimBP.Class);
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> MeshAsset(TEXT("HeroTPP '/Game/Characters/HeroTPP/HeroTPP.HeroTPP'"));
@@ -101,6 +100,7 @@ float ASHPlayer::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 				Health = 0.f;
 				isDeath = true;
 				GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+				if (isZoom) ZoomStart();
 			}
 		}
 	}
@@ -156,7 +156,7 @@ void ASHPlayer::serverFire_Implementation() {
 	FActorSpawnParameters param;
 	FVector location = GetActorLocation();
 	if (isZoom) location += GetActorUpVector() * 60.f;
-	else location += GetActorRightVector() * 75.f + GetActorUpVector() * 100.f;
+	else location += GetActorRightVector() * 75.f + GetActorUpVector() * 90.f;
 	bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, location, GetControlRotation(), param);
 	if (bullet) {
 		bullet->SetInstigator(this);
@@ -177,7 +177,7 @@ void ASHPlayer::callFire()
 		FActorSpawnParameters param;
 		FVector location = GetActorLocation();
 		if (isZoom) location += GetActorUpVector() * 60.f;
-		else location += GetActorRightVector() * 75.f + GetActorUpVector() * 100.f;
+		else location += GetActorRightVector() * 75.f + GetActorUpVector() * 90.f;
 		bullet = GetWorld()->SpawnActor<ASHBullets>(BulletBP, location, GetControlRotation(), param);
 		if (bullet) {
 			bullet->SetInstigator(this);
@@ -313,13 +313,6 @@ void ASHPlayer::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetim
 	DOREPLIFETIME(ASHPlayer, isRunning);
 }
 
-void ASHPlayer::MultiUpdateHealth_Implementation(float NewHealth)
-{
-	// 클라이언트에서 호출될 때 새로운 체력 값으로 업데이트
-	Health = NewHealth;
-	UE_LOG(LogTemp, Log, TEXT("Health updated to: %f"), NewHealth);
-}
-
 void ASHPlayer::serverHealth_Implementation(float delta)
 {
 	Health -= delta;
@@ -327,6 +320,7 @@ void ASHPlayer::serverHealth_Implementation(float delta)
 		Health = 0.f;
 		isDeath = true;
 		GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+		if (isZoom) ZoomStart();
 	}
 }
 

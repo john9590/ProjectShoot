@@ -23,21 +23,13 @@ class PROJECTSHOOT_API USHSubsystem : public UGameInstanceSubsystem
 public:
 	USHSubsystem();
 
-	// ----------------------------------------------------------------
-	// To handle session functionality. The Menu class will call these 
-	// ----------------------------------------------------------------
 	UFUNCTION(BlueprintCallable)
 	void CreateSession(int32 NumPublicConnections, FString MatchType);
 	UFUNCTION(BlueprintCallable)
 	void FindSession(int32 MaxSearchResults);
 	void JoinSession(const FOnlineSessionSearchResult& SessionResult);
-	void StartSession();
 	void DestroySession();
 
-
-	//-------------------------------------------------------------
-	// Our own custom delegate for the Menu class to bind callbacks
-	//-------------------------------------------------------------
 	FMultiplayerOnCreateSessionComplete MultiplayerOnCreateSessionComplete;
 	FMultiplayerOnFindSessionComplete MultiplayerOnFindSessionComplete;
 	FMultiplayerOnJoinSessionComplete MultiplayerOnJoinSessionComplete;
@@ -45,10 +37,6 @@ public:
 	FMultiplayerOnDestroySessionComplete MultiplayerOnDestroySessionComplete;
 
 protected:
-	// ----------------------------------------------------------------------------------------------
-	// Internal Callbacks for the delegate we'll add to the Online Session Interface delegate list.
-	// These don't need to be called outside this class. 
-	//-----------------------------------------------------------------------------------------------
 	void OnCreateSessionComplete(FName SessionName, bool bWasSuccessful);
 	void OnFindSessionComplete(bool bWasSuccessful);
 	void OnJoinSessionComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
@@ -65,10 +53,6 @@ private:
 	int32	LastNumPublicConnections;
 	FString LastMatchType;
 
-	// ------------------------------------------------------------------------
-	// To add to the Onlie Session Interface delegate list.
-	// We'll bind our MultiplayersessionSubsystem internal callbacks to these.
-	// ------------------------------------------------------------------------
 	FOnCreateSessionCompleteDelegate	CreateSessionCompleteDelegate;
 	FDelegateHandle						CreateSessionCompleteDelegateHandle;
 	FOnFindSessionsCompleteDelegate		FindSessionCompleteDelegate;

@@ -1,11 +1,14 @@
 # ProjectShoot
-### FPS와 TPS가 함께 있는 슈팅게임을 언리얼 엔진을 통해 제작한 포트폴리오
+### FPS와 TPS가 함께 있는 멀티 플레이 슈팅게임을 언리얼 엔진을 통해 제작한 포트폴리오
     적절한 엄폐와 기습을 통해 적을 물리치자!
 - 개발 규모 : 1인
 - 사용 엔진 : Unreal Engine 5.4.4
-- 개발 도구 : C++(Visaul Studio), BluePrint
+- 개발 도구 : C++(Visual Studio), BluePrint
 - 사용 어셋 : UE Legacy Sample
-
+- 사용 온라인 서브 시스템 : Steam
+# 시연 영상
+## 플레이 영상
+[![Video Label](http://img.youtube.com/vi/Z8kIrM9yURE/0.jpg)](https://youtu.be/Z8kIrM9yURE)
 # 개발 범위
 ## SHPlayer
     ACharacter를 상속받아 실제 플레이어에 관해 구현해 놓은 코드
@@ -46,37 +49,63 @@
 ## TPP_ANIM
     TPS상태의 플레이어의 애니메이션을 담당함
 ### 초기화 및 변수 갱신
-![alt text](image.png)
+![alt text](Image/image.png)
 
 ### 기본 STATE
-![alt text](image-1.png)
+![alt text](Image/image-1.png)
 
     TPPMove에서 플레이어의 현재 상태를 가져오고(달리기, 걷기 등) TPP_Aim에서 플레이어의 시선을 통한 총 위치를 받아와서 Apply해준다
 ### TPPMove
-![alt text](image-2.png)
+![alt text](Image/image-2.png)
 
     Jump키가 눌리거나 Death상태일때 Idle에서 상태를 변경해준다
 ### IDLE (WalkRun)
-![alt text](image-3.png)
+![alt text](Image/image-3.png)
 
     속도에 따라 해당 상태를 변경해준다, Rotate 즉 시선만 좌 우로 움직일 시에도 걷는 모션을 살짝 넣어줘 자연스럽게 만들어 준다
 
 ### WalkRun
-![alt text](image-4.png)
+![alt text](Image/image-4.png)
 
     현재 속도를 통해 Walk/Run의 애니메이션을 적용해 준다
 
 ### TPP_WalkRun
-![alt text](image-5.png)
+![alt text](Image/image-5.png)
 
 ### TPP_Aim
-![alt text](image-6.png)
+![alt text](Image/image-6.png)
 
 ## Bullets
     ProjectileMovementComponent를 이용하여 투사체 총알을 구현
 ### OnComponentHit
-![alt text](image-7.png)
-![alt text](image-8.png)
+![alt text](Image/image-7.png)
+![alt text](Image/image-8.png)
 
     Bullet이 다른 Actor와 충돌시 일어나는 이벤트로 Player와 맞으면 Player에 Applay Damage를 해주고 피와 관련된 이펙트를 발생하고 그렇지 않다면 총알이 박히는 이펙트를 발생시킨다
 
+## SHSubsystem
+     UGameInstanceSubsystem을 상속받아 온라인 세션을 관리하는 코드
+### 주요 변수
+- SessionInterface : IOnlineSessionPtr타입의 변수로 이를 이용해 OnlineSession에 접근하여 세션을 관리함
+- LastSessionSettings : 세션의 세팅을 관리하는 변수로 세션을 만들때 이를 인자로 넘겨서 세션을 세팅함
+- LastSessionSearch : 세션을 검색할 때 사용하는 변수로 해당 세팅을 가지는 세션을 찾는데 사용함
+
+### 주요 함수
+#### CreateSession
+    Menu UI에서 Host 버튼을 누르면 실행되는 함수로 세션을 세팅하고 그 세션을 만들어 준다. 이후 함수 실행이 완료되면 Delegate를 통해 결과를 Broadcast 해준다.
+#### FindSession
+    Menu UI에서 Join 버튼을 누르면 실행되는 함수로 해당 세팅을 가지는 세션을 찾는다. 이후 함수 실행이 완료되면 Delegate를 통해 결과를 Broadcast 해주고 Menu에 결과를 전달해 준다.
+#### JoinSession
+    FindSession을 통해 찾은 세션에 Join하게 해준다. 이후 함수 실행이 완료되면 Delegate를 통해 결과를 Broadcast 해준다.
+#### DestroySession
+    세션을 Destroy하고 결과를 Broadcast 해준다.
+## Menu
+### 주요 함수
+#### MenuSetup
+    Lobby 맵이 실행시 레벨 블루프린트로 인해 실행되며 SHSubsystem의 Session들의 Delegate에 함수를 바인딩해서 같이 실행될 수 있도록 해준다.
+#### OnCreateSession
+    SHSubsystem의 CreateSession이 완료되면 실행되는 함수로 본 플레이 Level로 넘어가게 된다.
+#### OnFindSession
+    SHSubsystem의 FindSession이 완료되면 실행되는 함수로 결과들을 가지고 결과 중 하나가 매치타입이 맞다면 JoinSession을 통해 결과를 넘겨준다.
+#### OnJoinSession
+    SHSubsystem의 JoinSession이 완료되면 실행되는 함수로 결과를 가지고 해당 세션에 플레이어가 들어가 멀티 플레이를 할 수 있도록 해준다.

@@ -43,9 +43,10 @@ private:
 	void ZoomStart();
 	void CondJump();
 
-
+	// TPS상태에서 유저가 들고있는 weapon을 나타냄
 	ASHWeapon* weapon;
 	FTimerHandle FireTimer;
+	// SHBullet을 부모로 하는 블루프린트를 불러옴, 이를 생성하여 총알을 발사함
 	UClass* BulletBP;
 	UParticleSystemComponent* emitter;
 	float bullettime;
@@ -61,19 +62,17 @@ public:
 	FRotator GetAim();
 	UPROPERTY(EditAnyWhere)
 	UParticleSystem* MFAsset;
+	// Camera의 위치를 플레이에 상대적으로 바꾸기 위해 USpringArmComponent를 이용하여 만든 변수, 이를 조절하여 시점을 변경함
 	USpringArmComponent* SpringArm;
+	// 이 위치가 유저의 시점이 되어 플레이어를 볼 수 있게 함
 	UCameraComponent* TpsCamera;
+	// FPS로 시점이 변경되었을 때 유저 앞에 조준선과 조준기가 보이기 위함
 	USkeletalMeshComponent* FpsWeapon;
-	USkeletalMeshComponent* TpsWeapon;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Replicated, Category = Health)
 	float Health;
-
-	UFUNCTION(NetMulticast, Reliable)
-	void MultiUpdateHealth(float NewHealth);
-	virtual void MultiUpdateHealth_Implementation(float NewHealth);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void serverHealth(float delta);
