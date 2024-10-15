@@ -11,7 +11,7 @@
 [![Video Label](http://img.youtube.com/vi/Z8kIrM9yURE/0.jpg)](https://youtu.be/Z8kIrM9yURE)
 # 개발 범위
 ## SHPlayer
-    ACharacter를 상속받아 실제 플레이어에 관해 구현해 놓은 코드
+ACharacter를 상속받아 실제 플레이어에 관해 구현해 놓은 코드
 ### 기능
 |이름|키|
 |------|---:|
