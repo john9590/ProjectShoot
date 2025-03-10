@@ -61,8 +61,3 @@
 - 애니메이션 상태 전이, 충돌 이펙트 등 시각적 피드백 요소까지 고려한 설계 경험이 인상 깊었습니다.
 
 ---
-
-## 🔗 링크
-
-- 📂 [GitHub Repository](https://github.com/john9590/ProjectShoot)
-- 🎞️ [시연 영상](https://youtu.be/Z8kIrM9yURE)
